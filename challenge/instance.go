@@ -12,6 +12,7 @@ type Instances struct {
 	challengeInstances map[Spec][]Instance
 	userInstances      map[string]Instance
 	mutex              *sync.Mutex
+	bindIp             string
 }
 
 type Instance struct {
@@ -82,7 +83,7 @@ func (i *Instances) GetCurrentUserInstance(user string) Instance {
 
 func (i *Instances) StartInstance(challenge Spec) {
 	fmt.Println("Starting an instance of", challenge.Name)
-	instance, err := i.Client.StartContainer(challenge)
+	instance, err := i.Client.StartContainer(challenge, i.bindIp)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -123,51 +124,4 @@ func (i *Instances) Disconnect(user string) {
 func (i *Instances) StopInstance(instance Instance) {
 	_ = i.Client.StopContainer(instance.Container)
 	instance.Stopped = true
-}
-
-func (i *Instances) HousekeepingTick() {
-	for _, spec := range challengeSpecList {
-		instances, ok := i.challengeInstances[spec]
-		if !ok {
-			go i.StartInstance(spec)
-			go i.StartInstance(spec)
-			continue
-		}
-
-		capacity := 0
-		users := 0
-		count := 0
-		spareInstances := 0
-		for _, instance := range instances {
-			if instance.Stopped {
-				continue
-			}
-			capacity += spec.UserLimit
-			users += len(instance.Users)
-			count++
-			if len(instance.Users) == 0 {
-				spareInstances++
-			}
-		}
-
-		if spareInstances == 0 {
-			go i.StartInstance(spec)
-		}
-		if spareInstances > 2 {
-			spare := Instance{}
-			found := false
-			for _, instance := range instances {
-				if instance.Stopped || len(instance.Users) > 0 {
-					continue
-				}
-				spare = instance
-				found = true
-			}
-			if !found {
-				continue
-			}
-
-			go i.StopInstance(spare)
-		}
-	}
 }

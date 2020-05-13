@@ -13,6 +13,7 @@ require (
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.5.1 // indirect
 	golang.org/x/net v0.0.0-20200506145744-7e3656a0809f // indirect
 )

@@ -13,7 +13,7 @@ type Server struct {
 	Instances *challenge.Instances
 }
 
-func (s *Server) StartServer() error {
+func (s *Server) StartServer(address string) error {
 	ws := new(restful.WebService)
 	ws.Route(ws.GET("/status").To(s.status))
 	ws.Route(ws.GET("/user/{user_id}").To(s.user))
@@ -21,7 +21,7 @@ func (s *Server) StartServer() error {
 	ws.Route(ws.POST("/reset/{user_id}").To(s.reset))
 	ws.Route(ws.POST("/").To(s.getInstance))
 	restful.Add(ws)
-	return http.ListenAndServe(":6000", nil)
+	return http.ListenAndServe(address, nil)
 }
 
 func isAuthenticated(request *restful.Request, response *restful.Response) bool {

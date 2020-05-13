@@ -56,7 +56,7 @@ func (c *Client) BuildImage(spec *Spec) error {
 	return nil
 }
 
-func (c *Client) StartContainer(spec Spec) (Instance, error) {
+func (c *Client) StartContainer(spec Spec, bindIp string) (Instance, error) {
 	ctx := context.Background()
 	port, _ := nat.NewPort("tcp", strconv.Itoa(spec.Port))
 	assignedPort := strconv.Itoa(rand.Intn(55535) + 10000)
@@ -72,7 +72,7 @@ func (c *Client) StartContainer(spec Spec) (Instance, error) {
 		PortBindings: nat.PortMap{
 			port: []nat.PortBinding{
 				{
-					HostIP:   "127.0.0.1",
+					HostIP:   bindIp,
 					HostPort: assignedPort,
 				},
 			},
