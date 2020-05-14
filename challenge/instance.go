@@ -24,15 +24,6 @@ type Instance struct {
 	avoiding  []string
 }
 
-func SetupInstances(client *Client) Instances {
-	return Instances{
-		Client:             client,
-		challengeInstances: make(map[Spec][]Instance),
-		userInstances:      make(map[string]Instance),
-		mutex:              &sync.Mutex{},
-	}
-}
-
 func contains(haystack []string, needle string) bool {
 	for _, element := range haystack {
 		if element == needle {
