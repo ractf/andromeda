@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/capnm/sysinfo"
 	"github.com/emicklei/go-restful/v3"
+	"github.com/ractf/andromeda/pkg/challenge"
 	"net/http"
 	"os"
-	"ractf.co.uk/andromeda/challenge"
 )
 
 type Server struct {

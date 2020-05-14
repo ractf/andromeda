@@ -1,4 +1,4 @@
-module ractf.co.uk/andromeda
+module github.com/ractf/andromeda
 
 go 1.14
 

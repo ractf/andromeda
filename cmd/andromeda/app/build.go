@@ -1,11 +1,11 @@
-package cmd
+package app
 
 import (
 	"fmt"
+	"github.com/ractf/andromeda/pkg/challenge"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"
-	"ractf.co.uk/andromeda/challenge"
 )
 
 var BuildCommand = &cobra.Command{

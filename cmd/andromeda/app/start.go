@@ -1,13 +1,13 @@
-package cmd
+package app
 
 import (
 	"fmt"
+	"github.com/ractf/andromeda/pkg/api"
+	"github.com/ractf/andromeda/pkg/challenge"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"
 	"math/rand"
-	"ractf.co.uk/andromeda/api"
-	"ractf.co.uk/andromeda/challenge"
 	"time"
 )
 
