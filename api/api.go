@@ -6,6 +6,7 @@ import (
 	"github.com/capnm/sysinfo"
 	"github.com/emicklei/go-restful/v3"
 	"net/http"
+	"os"
 	"ractf.co.uk/andromeda/challenge"
 )
 
@@ -15,29 +16,27 @@ type Server struct {
 
 func (s *Server) StartServer(address string) error {
 	ws := new(restful.WebService)
-	ws.Route(ws.GET("/status").To(s.status))
-	ws.Route(ws.GET("/user/{user_id}").To(s.user))
-	ws.Route(ws.POST("/disconnect/{user_id}").To(s.disconnect))
-	ws.Route(ws.POST("/reset/{user_id}").To(s.reset))
-	ws.Route(ws.POST("/").To(s.getInstance))
+	ws.Route(ws.GET("/status").To(Authenticated(s.status)))
+	ws.Route(ws.GET("/user/{user_id}").To(Authenticated(s.user)))
+	ws.Route(ws.POST("/disconnect/{user_id}").To(Authenticated(s.disconnect)))
+	ws.Route(ws.POST("/reset/{user_id}").To(Authenticated(s.reset)))
+	ws.Route(ws.POST("/").To(Authenticated(s.getInstance)))
 	restful.Add(ws)
 	return http.ListenAndServe(address, nil)
 }
 
-func isAuthenticated(request *restful.Request, response *restful.Response) bool {
-	/*apiKey, exists := os.LookupEnv("API_KEY")
-	if !exists || request.HeaderParameter("Authorization") != apiKey {
-		_ = response.WriteErrorString(http.StatusForbidden, "Incorrect api key")
-		return false
-	}*/
-	return true
+func Authenticated(function restful.RouteFunction) restful.RouteFunction {
+	return func(request *restful.Request, response *restful.Response) {
+		apiKey, exists := os.LookupEnv("API_KEY")
+		if !exists || request.HeaderParameter("Authorization") != apiKey {
+			_ = response.WriteErrorString(http.StatusForbidden, "Incorrect api key")
+			return
+		}
+		function(request, response)
+	}
 }
 
 func (s *Server) status(request *restful.Request, response *restful.Response) {
-	if !isAuthenticated(request, response) {
-		return
-	}
-
 	si := sysinfo.Get()
 	_ = response.WriteAsJson(si)
 }
@@ -48,10 +47,6 @@ type instanceDetails struct {
 }
 
 func (s *Server) user(request *restful.Request, response *restful.Response) {
-	if !isAuthenticated(request, response) {
-		return
-	}
-
 	instance := s.Instances.GetCurrentUserInstance(request.PathParameter("user_id"))
 	if instance.Users == nil {
 		_ = response.WriteErrorString(http.StatusNotFound, "User has no instance")
@@ -61,18 +56,10 @@ func (s *Server) user(request *restful.Request, response *restful.Response) {
 }
 
 func (s *Server) disconnect(request *restful.Request, response *restful.Response) {
-	if !isAuthenticated(request, response) {
-		return
-	}
-
 	s.Instances.Disconnect(request.PathParameter("user_id"))
 }
 
 func (s *Server) reset(request *restful.Request, response *restful.Response) {
-	if !isAuthenticated(request, response) {
-		return
-	}
-
 	user := request.PathParameter("user_id")
 	instance := s.Instances.GetCurrentUserInstance(request.PathParameter("user_id"))
 
@@ -92,10 +79,6 @@ type instanceRequest struct {
 }
 
 func (s *Server) getInstance(request *restful.Request, response *restful.Response) {
-	if !isAuthenticated(request, response) {
-		return
-	}
-
 	request.Request.Body = http.MaxBytesReader(response.ResponseWriter, request.Request.Body, 10240)
 	dec := json.NewDecoder(request.Request.Body)
 	dec.DisallowUnknownFields()
