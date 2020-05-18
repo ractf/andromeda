@@ -8,8 +8,9 @@ import (
 func StartServer(client *Client, bindIp string) *Instances {
 	instances := Instances{
 		Client:             client,
-		challengeInstances: make(map[Spec][]Instance),
-		userInstances:      make(map[string]Instance),
+		challengeInstances: make(map[Spec][]*Instance),
+		userInstances:      make(map[string]*Instance),
+		userAvoids:         make(map[string]*Instance),
 		mutex:              &sync.Mutex{},
 		bindIp:             bindIp,
 	}
@@ -42,7 +43,7 @@ func (i *Instances) HousekeepingTick() {
 		count := 0
 		spareInstances := 0
 		for _, instance := range instances {
-			if instance.Stopped {
+			if instance == nil || instance.Stopped {
 				continue
 			}
 			capacity += spec.UserLimit
@@ -57,10 +58,10 @@ func (i *Instances) HousekeepingTick() {
 			go i.StartInstance(spec)
 		}
 		if spareInstances > 2 {
-			spare := Instance{}
+			spare := &Instance{}
 			found := false
 			for _, instance := range instances {
-				if instance.Stopped || len(instance.Users) > 0 {
+				if instance == nil || instance.Stopped || len(instance.Users) > 0 {
 					continue
 				}
 				spare = instance

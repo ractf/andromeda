@@ -89,11 +89,13 @@ func (c *Client) StartContainer(spec Spec, bindIp string) (Instance, error) {
 		return Instance{}, err
 	}
 
+	avoiding := make([]string, 0)
 	return Instance{
 		Port:      assignedPort,
 		Challenge: spec,
 		Users:     make([]string, 0),
 		Container: resp.ID,
+		avoiding:  &avoiding,
 	}, nil
 }
 
