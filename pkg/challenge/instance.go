@@ -25,7 +25,6 @@ type Instance struct {
 }
 
 func contains(haystack *[]string, needle string) (bool, int) {
-	fmt.Println(haystack)
 	for i, element := range *haystack {
 		if element == needle {
 			return true, i

@@ -69,7 +69,6 @@ func (s *Server) reset(request *restful.Request, response *restful.Response) {
 	if err != nil {
 		return
 	}
-	fmt.Println(i)
 
 	_ = response.WriteAsJson(instanceDetails{Port: i.Port, Challenge: i.Challenge.Name})
 }
