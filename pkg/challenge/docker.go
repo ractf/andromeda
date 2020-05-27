@@ -77,6 +77,7 @@ func (c *Client) StartContainer(spec Spec, bindIp string) (Instance, error) {
 				},
 			},
 		},
+		SecurityOpt: []string{"seccomp=unconfined"},
 	}
 
 	resp, err := c.docker.ContainerCreate(ctx, &containerConfig, &hostConfig, nil, spec.ImageName+assignedPort)
