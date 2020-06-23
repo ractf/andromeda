@@ -19,7 +19,7 @@ jobs:
     - name: Verify Go version
       run: go version
     - name: Build Andromeda
-      run: go build
+      run: cd cmd/andromeda && go build
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -39,6 +39,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./andromeda
+        asset_path: ./cmd/andromeda/andromeda
         asset_name: andromeda
         asset_content_type: application/octet-stream
