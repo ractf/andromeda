@@ -1,6 +1,9 @@
 name: Build Release
 
-on: release
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   release-linux-amd64:
