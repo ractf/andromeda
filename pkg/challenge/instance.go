@@ -3,6 +3,7 @@ package challenge
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	"sync"
 )
 
@@ -42,6 +43,8 @@ func remove(slice []string, s int) []string {
 }
 
 func (i *Instances) GetInstanceForUser(user string, challenge Spec) (*Instance, error) {
+	i.mutex.Lock()
+	defer i.mutex.Unlock()
 	if instance, ok := i.userInstances[user]; ok && instance.Challenge == challenge {
 		return instance, nil
 	}
@@ -50,11 +53,14 @@ func (i *Instances) GetInstanceForUser(user string, challenge Spec) (*Instance, 
 	if !ok || len(instances) == 0 {
 		return &Instance{}, errors.New("no instances of challenge")
 	}
+	shuffledInstances := make([]*Instance, len(instances))
+	copy(shuffledInstances, instances)
 
-	for _, instance := range instances {
-		if instance == nil {
-			continue
-		}
+	rand.Shuffle(len(shuffledInstances), func(i, j int) {
+		shuffledInstances[i], shuffledInstances[j] = shuffledInstances[j], shuffledInstances[i]
+	})
+
+	for _, instance := range shuffledInstances {
 		if !instance.Stopped && len(instance.Users) < instance.Challenge.UserLimit && len(*instance.avoiding) < 50 {
 			avoiding, _ := contains(instance.avoiding, user)
 			if avoiding {
@@ -66,10 +72,7 @@ func (i *Instances) GetInstanceForUser(user string, challenge Spec) (*Instance, 
 		}
 	}
 
-	for _, instance := range instances {
-		if instance == nil {
-			continue
-		}
+	for _, instance := range shuffledInstances {
 		if !instance.Stopped && len(instance.Users) < instance.Challenge.UserLimit {
 			if avoid, ok := i.userAvoids[user]; ok && avoid == instance {
 				continue
@@ -90,6 +93,8 @@ func (i *Instances) GetInstanceForUser(user string, challenge Spec) (*Instance, 
 }
 
 func (i *Instances) GetCurrentUserInstance(user string) *Instance {
+	i.mutex.Lock()
+	defer i.mutex.Unlock()
 	if instance, ok := i.userInstances[user]; ok {
 		return instance
 	}
@@ -108,19 +113,23 @@ func (i *Instances) StartInstance(challenge Spec) {
 	i.mutex.Lock()
 	instances, ok := i.challengeInstances[challenge]
 	if !ok {
-		instances = make([]*Instance, 1)
+		instances = make([]*Instance, 0)
 	}
 	i.challengeInstances[challenge] = append(instances, &instance)
 	i.mutex.Unlock()
 }
 
 func (i *Instances) AvoidInstance(user string, instance *Instance) {
+	i.mutex.Lock()
+	defer i.mutex.Unlock()
 	avoiding := append(*instance.avoiding, user)
 	instance.avoiding = &avoiding
 	i.userAvoids[user] = instance
 }
 
 func (i *Instances) Disconnect(user string) {
+	i.mutex.Lock()
+	defer i.mutex.Unlock()
 	instance := i.GetCurrentUserInstance(user)
 	if instance.Users == nil {
 		return
@@ -141,6 +150,8 @@ func (i *Instances) Disconnect(user string) {
 }
 
 func (i *Instances) StopInstance(instance *Instance) {
+	i.mutex.Lock()
+	defer i.mutex.Unlock()
 	_ = i.Client.StopContainer(instance.Container)
 	instance.Stopped = true
 }

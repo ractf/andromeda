@@ -43,7 +43,7 @@ func (i *Instances) HousekeepingTick() {
 		count := 0
 		spareInstances := 0
 		for _, instance := range instances {
-			if instance == nil || instance.Stopped {
+			if instance.Stopped {
 				continue
 			}
 			capacity += spec.UserLimit
@@ -61,7 +61,7 @@ func (i *Instances) HousekeepingTick() {
 			spare := &Instance{}
 			found := false
 			for _, instance := range instances {
-				if instance == nil || instance.Stopped || len(instance.Users) > 0 {
+				if instance.Stopped || len(instance.Users) > 0 {
 					continue
 				}
 				spare = instance
