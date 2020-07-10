@@ -1,0 +1,44 @@
+name: Build Release
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release-linux-amd64:
+    name: Generate Release
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@master
+    - name: Setup Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.14'
+    - name: Verify Go version
+      run: go version
+    - name: Build Andromeda
+      run: cd cmd/andromeda && go build
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.sha }}
+        release_name: Release ${{ github.sha }}
+        body: |
+          Change notes here
+        draft: true
+        prerelease: false
+    - name: Upload Release Asset
+      id: upload-release-asset 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./cmd/andromeda/andromeda
+        asset_name: andromeda
+        asset_content_type: application/octet-stream
