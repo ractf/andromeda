@@ -3,7 +3,7 @@ package app
 import (
 	"fmt"
 	"github.com/ractf/andromeda/pkg/api"
-	"github.com/ractf/andromeda/pkg/challenge"
+	"github.com/ractf/andromeda/pkg/node"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"
@@ -21,19 +21,19 @@ var StartCommand = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		cli := challenge.CreateDockerClient()
+		cli := node.CreateDockerClient()
 
 		for _, file := range files {
 			if !file.IsDir() {
 				continue
 			}
-			_, err := challenge.Create(folder + file.Name())
+			_, err := node.Create(folder + file.Name())
 			if err != nil {
 				fmt.Println("Error processing challenge: "+file.Name(), err)
 			}
 		}
 
-		instances := challenge.StartServer(&cli, bindIp)
+		instances := node.StartServer(&cli, bindIp)
 
 		fmt.Println("Listening on", apiAddress)
 		server := api.Server{

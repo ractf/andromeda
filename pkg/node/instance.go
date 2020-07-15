@@ -1,4 +1,4 @@
-package challenge
+package node
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-type Instances struct {
+type Node struct {
 	Client             *Client
 	challengeInstances map[Spec][]*Instance
 	userInstances      map[string]*Instance
@@ -34,7 +34,7 @@ func contains(haystack *[]string, needle string) (bool, int) {
 	return false, 0
 }
 
-func (i *Instances) GetChallengeByName(name string) Spec {
+func (n *Node) GetChallengeByName(name string) Spec {
 	return challengeSpecs[name]
 }
 
@@ -42,14 +42,14 @@ func remove(slice []string, s int) []string {
 	return append(slice[:s], slice[s+1:]...)
 }
 
-func (i *Instances) GetInstanceForUser(user string, challenge Spec) (*Instance, error) {
-	i.mutex.Lock()
-	defer i.mutex.Unlock()
-	if instance, ok := i.userInstances[user]; ok && instance.Challenge == challenge {
+func (n *Node) GetInstanceForUser(user string, challenge Spec) (*Instance, error) {
+	n.mutex.Lock()
+	defer n.mutex.Unlock()
+	if instance, ok := n.userInstances[user]; ok && instance.Challenge == challenge {
 		return instance, nil
 	}
 
-	instances, ok := i.challengeInstances[challenge]
+	instances, ok := n.challengeInstances[challenge]
 	if !ok || len(instances) == 0 {
 		return &Instance{}, errors.New("no instances of challenge")
 	}
@@ -67,19 +67,19 @@ func (i *Instances) GetInstanceForUser(user string, challenge Spec) (*Instance, 
 				continue
 			}
 			instance.Users = append(instance.Users, user)
-			i.userInstances[user] = instance
+			n.userInstances[user] = instance
 			return instance, nil
 		}
 	}
 
 	for _, instance := range shuffledInstances {
 		if !instance.Stopped && len(instance.Users) < instance.Challenge.UserLimit {
-			if avoid, ok := i.userAvoids[user]; ok && avoid == instance {
+			if avoid, ok := n.userAvoids[user]; ok && avoid == instance {
 				continue
 			}
 
 			instance.Users = append(instance.Users, user)
-			i.userInstances[user] = instance
+			n.userInstances[user] = instance
 			avoiding, index := contains(instance.avoiding, user)
 			if avoiding {
 				x := remove(*instance.avoiding, index)
@@ -92,45 +92,45 @@ func (i *Instances) GetInstanceForUser(user string, challenge Spec) (*Instance, 
 	return &Instance{}, errors.New("could not find instance")
 }
 
-func (i *Instances) GetCurrentUserInstance(user string) *Instance {
-	i.mutex.Lock()
-	defer i.mutex.Unlock()
-	if instance, ok := i.userInstances[user]; ok {
+func (n *Node) GetCurrentUserInstance(user string) *Instance {
+	n.mutex.Lock()
+	defer n.mutex.Unlock()
+	if instance, ok := n.userInstances[user]; ok {
 		return instance
 	}
 	x := make([]string, 0)
 	return &Instance{avoiding: &x}
 }
 
-func (i *Instances) StartInstance(challenge Spec) {
+func (n *Node) StartInstance(challenge Spec) {
 	fmt.Println("Starting an instance of", challenge.Name)
-	instance, err := i.Client.StartContainer(challenge, i.bindIp)
+	instance, err := n.Client.StartContainer(challenge, n.bindIp)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	i.mutex.Lock()
-	instances, ok := i.challengeInstances[challenge]
+	n.mutex.Lock()
+	instances, ok := n.challengeInstances[challenge]
 	if !ok {
 		instances = make([]*Instance, 0)
 	}
-	i.challengeInstances[challenge] = append(instances, &instance)
-	i.mutex.Unlock()
+	n.challengeInstances[challenge] = append(instances, &instance)
+	n.mutex.Unlock()
 }
 
-func (i *Instances) AvoidInstance(user string, instance *Instance) {
-	i.mutex.Lock()
-	defer i.mutex.Unlock()
+func (n *Node) AvoidInstance(user string, instance *Instance) {
+	n.mutex.Lock()
+	defer n.mutex.Unlock()
 	avoiding := append(*instance.avoiding, user)
 	instance.avoiding = &avoiding
-	i.userAvoids[user] = instance
+	n.userAvoids[user] = instance
 }
 
-func (i *Instances) Disconnect(user string) {
-	i.mutex.Lock()
-	defer i.mutex.Unlock()
-	instance := i.GetCurrentUserInstance(user)
+func (n *Node) Disconnect(user string) {
+	n.mutex.Lock()
+	defer n.mutex.Unlock()
+	instance := n.GetCurrentUserInstance(user)
 	if instance.Users == nil {
 		return
 	}
@@ -146,12 +146,12 @@ func (i *Instances) Disconnect(user string) {
 		instance.Users = append(instance.Users[:index], instance.Users[index+1:]...)
 	}
 
-	delete(i.userInstances, user)
+	delete(n.userInstances, user)
 }
 
-func (i *Instances) StopInstance(instance *Instance) {
-	i.mutex.Lock()
-	defer i.mutex.Unlock()
-	_ = i.Client.StopContainer(instance.Container)
+func (n *Node) StopInstance(instance *Instance) {
+	n.mutex.Lock()
+	defer n.mutex.Unlock()
+	_ = n.Client.StopContainer(instance.Container)
 	instance.Stopped = true
 }

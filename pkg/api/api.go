@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"github.com/capnm/sysinfo"
 	"github.com/emicklei/go-restful/v3"
-	"github.com/ractf/andromeda/pkg/challenge"
+	"github.com/ractf/andromeda/pkg/node"
 	"net/http"
 	"os"
 )
 
 type Server struct {
-	Instances *challenge.Instances
+	Instances *node.Node
 }
 
 func (s *Server) StartServer(address string) error {

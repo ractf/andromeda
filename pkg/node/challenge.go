@@ -1,4 +1,4 @@
-package challenge
+package node
 
 import (
 	"encoding/json"
@@ -30,6 +30,7 @@ func Create(path string) (Spec, error) {
 
 	return challengeSpec, nil
 }
+
 func unmarshallSpec(path string) (Spec, error) {
 	jsonFile, err := os.Open(path + "/challenge.json")
 	if err != nil {

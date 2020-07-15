@@ -2,7 +2,7 @@ package app
 
 import (
 	"fmt"
-	"github.com/ractf/andromeda/pkg/challenge"
+	"github.com/ractf/andromeda/pkg/node"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"
@@ -17,13 +17,13 @@ var BuildCommand = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		cli := challenge.CreateDockerClient()
+		cli := node.CreateDockerClient()
 
 		for _, file := range files {
 			if !file.IsDir() {
 				continue
 			}
-			spec, err := challenge.Create(folder + file.Name())
+			spec, err := node.Create(folder + file.Name())
 			if err != nil {
 				fmt.Println("Error processing challenge: "+file.Name(), err)
 			}

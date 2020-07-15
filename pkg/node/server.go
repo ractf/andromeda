@@ -1,12 +1,12 @@
-package challenge
+package node
 
 import (
 	"sync"
 	"time"
 )
 
-func StartServer(client *Client, bindIp string) *Instances {
-	instances := Instances{
+func StartServer(client *Client, bindIp string) *Node {
+	instances := Node{
 		Client:             client,
 		challengeInstances: make(map[Spec][]*Instance),
 		userInstances:      make(map[string]*Instance),
@@ -18,23 +18,23 @@ func StartServer(client *Client, bindIp string) *Instances {
 	return &instances
 }
 
-func (i *Instances) HousekeepingLoop() {
-	go i.HousekeepingTick()
+func (n *Node) HousekeepingLoop() {
+	go n.HousekeepingTick()
 	ticker := time.NewTicker(time.Second * time.Duration(30))
 	for {
 		select {
 		case <-ticker.C:
-			go i.HousekeepingTick()
+			go n.HousekeepingTick()
 		}
 	}
 }
 
-func (i *Instances) HousekeepingTick() {
+func (n *Node) HousekeepingTick() {
 	for _, spec := range challengeSpecList {
-		instances, ok := i.challengeInstances[spec]
+		instances, ok := n.challengeInstances[spec]
 		if !ok {
-			go i.StartInstance(spec)
-			go i.StartInstance(spec)
+			go n.StartInstance(spec)
+			go n.StartInstance(spec)
 			continue
 		}
 
@@ -55,7 +55,7 @@ func (i *Instances) HousekeepingTick() {
 		}
 
 		if spareInstances == 0 {
-			go i.StartInstance(spec)
+			go n.StartInstance(spec)
 		}
 		if spareInstances > 2 {
 			spare := &Instance{}
@@ -71,7 +71,7 @@ func (i *Instances) HousekeepingTick() {
 				continue
 			}
 
-			go i.StopInstance(spare)
+			go n.StopInstance(spare)
 		}
 	}
 }
