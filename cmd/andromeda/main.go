@@ -1,8 +1,6 @@
 package main
 
-import (
-	"github.com/ractf/andromeda/cmd/andromeda/app"
-)
+import "github.com/ractf/andromeda/cmd/andromeda/app"
 
 func main() {
 	err := app.RootCommand.Execute()
