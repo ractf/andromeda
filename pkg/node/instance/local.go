@@ -1,7 +1,9 @@
 package instance
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"sync"
 )
 
@@ -18,7 +20,12 @@ func (i LocalInstanceController) StartInstance(jobSpec *JobSpec) {
 		fmt.Println(err)
 		return
 	}
-	_ = instance
+
+	file, _ := json.MarshalIndent(instance, "", "")
+	err = ioutil.WriteFile("/opt/andromeda/instances/"+instance.Container+".json", file, 0644)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	i.Mutex.Lock()
 	instances, ok := i.Instances[jobSpec]
@@ -54,4 +61,14 @@ func (i LocalInstanceController) GetLocalInstancesOf(jobSpec *JobSpec) []*Instan
 	copy(clone, i.Instances[jobSpec])
 
 	return clone
+}
+
+func (i LocalInstanceController) LoadInstance(instance *Instance, jobSpec *JobSpec) {
+	i.Mutex.Lock()
+	instances, ok := i.Instances[jobSpec]
+	if !ok {
+		instances = make([]*Instance, 0)
+	}
+	i.Instances[jobSpec] = append(instances, instance)
+	i.Mutex.Unlock()
 }

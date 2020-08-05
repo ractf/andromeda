@@ -50,7 +50,7 @@ func (u *userRoutes) getInstance(request *restful.Request, response *restful.Res
 	}
 
 	job := r.Job
-	jobSpec := u.node.GetJobSpecByName(job)
+	jobSpec := u.node.GetJobSpecByUuid(job)
 
 	u.mutex.Lock()
 	defer u.mutex.Unlock()
@@ -82,7 +82,7 @@ func (u *userRoutes) resetInstance(request *restful.Request, response *restful.R
 	}
 
 	job := r.Job
-	jobSpec := u.node.GetJobSpecByName(job)
+	jobSpec := u.node.GetJobSpecByUuid(job)
 
 	u.mutex.Lock()
 	defer u.mutex.Unlock()

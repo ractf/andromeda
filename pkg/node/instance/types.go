@@ -7,9 +7,11 @@ type InstanceController interface {
 	StopInstance(instance *Instance)
 	GetLocalInstances() []*Instance
 	GetLocalInstancesOf(jobSpec *JobSpec) []*Instance
+	LoadInstance(instance *Instance, jobSpec *JobSpec)
 }
 
 type JobSpec struct {
+	Uuid         string           `json:"uuid,omitempty"`
 	Name         string           `json:"name,omitempty"`
 	Port         int              `json:"port,omitempty"`
 	Replicas     int              `json:"replicas,omitempty"`
@@ -26,7 +28,8 @@ type ResourceLimit struct {
 
 type Instance struct {
 	Job       *JobSpec
-	Container string
-	Port      int
+	JobId     string `json:"jobid"`
+	Container string `json:"container"`
+	Port      int    `json:"Port"`
 	Dead      bool
 }
