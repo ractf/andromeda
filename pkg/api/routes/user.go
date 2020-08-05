@@ -25,6 +25,7 @@ func AddUserRoutes(node *node.Node, ws *restful.WebService) {
 	}
 
 	ws.Route(ws.POST("/").To(Authenticated(u.getInstance, node.Config.ApiKey)))
+	ws.Route(ws.POST("/reset").To(Authenticated(u.resetInstance, node.Config.ApiKey)))
 }
 
 type instanceRequest struct {
