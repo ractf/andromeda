@@ -1,0 +1,42 @@
+
+name: Build Container
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release-linux-amd64:
+    name: Generate Release
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout Repository
+      uses: actions/checkout@master
+
+    - name: Setup Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.14'
+
+    - name: Verify Go version
+      run: go version
+
+    - name: Build Andromedad
+      run: GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build ./cmd/andromedad
+
+    - name: Build container
+      run: docker build -t ractf/andromeda -t docker.pkg.github.com/ractf/andromeda/andromeda:latest .
+
+    - name: Login to Dockerhub
+      run: docker login --username ractf --password ${{ secrets.password }}
+
+    - name: Login to Github packages
+      run: docker login docker.pkg.github.com -u $GITHUB_ACTOR -p ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Push to Github packages
+      run: docker push docker.pkg.github.com/ractf/andromeda/andromeda:latest
+
+    - name: Push to Dockerhub
+      run: docker push ractf/andromeda:latest
