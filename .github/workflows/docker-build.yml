@@ -1,10 +1,7 @@
 
 name: Build Container
 
-on:
-  push:
-    branches:
-      - master
+on: push
 
 jobs:
   release-linux-amd64:
@@ -30,13 +27,17 @@ jobs:
       run: docker build -t ractf/andromeda -t docker.pkg.github.com/ractf/andromeda/andromeda:latest .
 
     - name: Login to Dockerhub
+      if: github.ref == 'refs/heads/master'
       run: docker login --username ractf --password ${{ secrets.password }}
 
     - name: Login to Github packages
+      if: github.ref == 'refs/heads/master'
       run: docker login docker.pkg.github.com -u $GITHUB_ACTOR -p ${{ secrets.GITHUB_TOKEN }}
 
     - name: Push to Github packages
+      if: github.ref == 'refs/heads/master'
       run: docker push docker.pkg.github.com/ractf/andromeda/andromeda:latest
 
     - name: Push to Dockerhub
+      if: github.ref == 'refs/heads/master'
       run: docker push ractf/andromeda:latest
