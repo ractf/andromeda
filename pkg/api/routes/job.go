@@ -2,6 +2,8 @@ package routes
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/docker/distribution/uuid"
 	"github.com/emicklei/go-restful/v3"
 	"github.com/ractf/andromeda/pkg/node"
 	"github.com/ractf/andromeda/pkg/node/instance"
@@ -30,7 +32,10 @@ func (j *jobRoutes) submitJob(request *restful.Request, response *restful.Respon
 	if err != nil {
 		_ = response.WriteError(500, err)
 	}
+	spec.Uuid = uuid.Generate().String()
 	j.node.SubmitJobSpec(&spec)
+
+	response.Write([]byte(fmt.Sprintf("{\"id\":\"%v\"}", spec.Uuid)))
 }
 
 func (j *jobRoutes) restartJob(request *restful.Request, response *restful.Response) {

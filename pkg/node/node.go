@@ -38,6 +38,10 @@ func StartNode(config *Config) *Node {
 	}
 	node.InstanceController = instanceController
 
+	os.Mkdir("/opt/andromeda/", 0644)
+	os.Mkdir("/opt/andromeda/jobs/", 0644)
+	os.Mkdir("/opt/andromeda/instances/", 0644)
+
 	node.loadJobs()
 	node.loadInstances()
 	go node.HousekeepingLoop()
