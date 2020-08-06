@@ -22,12 +22,6 @@ type Client struct {
 	defaultAuth types.AuthConfig
 }
 
-type ContainerClient interface {
-	StartContainer(spec *JobSpec) (Instance, error)
-	StopContainer(id string) error
-	RestartContainer(instance *Instance) error
-}
-
 func CreateDockerClient(defaultAuth types.AuthConfig) ContainerClient {
 	cli, err := client.NewEnvClient()
 	if err != nil {

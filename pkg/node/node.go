@@ -1,12 +1,16 @@
 package node
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/ractf/andromeda/pkg/node/instance"
 	"io/ioutil"
 	"log"
+	"net"
+	"net/http"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -151,5 +155,33 @@ func (n *Node) HousekeepingTick() {
 				go n.InstanceController.StartInstance(spec)
 			}
 		}
+
+		for _, i := range instances {
+			//TODO: Make this configurable
+			healthy := n.isPortOpen(i.Port, 3)
+			if !healthy && i.Healthy {
+				n.postWebhook(i)
+			}
+			i.Healthy = healthy
+		}
+	}
+}
+
+func (n *Node) isPortOpen(port int, timeout int) bool {
+	connectTimeout := time.Duration(timeout) * time.Second
+	conn, _ := net.DialTimeout("tcp", net.JoinHostPort(n.Config.PublicIp, strconv.Itoa(port)), connectTimeout)
+
+	if conn != nil {
+		defer conn.Close()
+		return true
+	}
+	return false
+}
+
+func (n *Node) postWebhook(i *instance.Instance) {
+	data := "{\"embeds\": [{\"title\": \"Container Failed Healthcheck\",\"description\": \"Job: " + i.Job.Name + "\nIp:" + n.Config.PublicIp + "\nPort: " + strconv.Itoa(i.Port) + "\nContainer: " + i.Container + "\",\"color\": 9833227}]}"
+	_, err := http.Post(n.Config.DiscordWebhookUrl, "application/json", bytes.NewBufferString(data))
+	if err != nil {
+		fmt.Println(err)
 	}
 }

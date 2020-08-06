@@ -11,6 +11,7 @@ type Config struct {
 	PortMax             int              `json:"portMax"`
 	ApiKey              string           `json:"apiKey"`
 	DefaultRegistryAuth types.AuthConfig `json:"registryAuth,omitempty"`
+	DiscordWebhookUrl   string           `json:"discordWebhookUrl"`
 }
 
 var DefaultConfig = Config{
@@ -22,4 +23,5 @@ var DefaultConfig = Config{
 	PortMax:             65535,
 	ApiKey:              "",
 	DefaultRegistryAuth: types.AuthConfig{},
+	DiscordWebhookUrl:   "",
 }

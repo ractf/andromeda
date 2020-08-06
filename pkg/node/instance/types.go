@@ -11,6 +11,12 @@ type InstanceController interface {
 	LoadInstance(instance *Instance)
 }
 
+type ContainerClient interface {
+	StartContainer(spec *JobSpec) (Instance, error)
+	StopContainer(id string) error
+	RestartContainer(instance *Instance) error
+}
+
 type JobSpec struct {
 	Uuid         string           `json:"uuid,omitempty"`
 	Name         string           `json:"name,omitempty"`
@@ -31,6 +37,7 @@ type Instance struct {
 	Job       *JobSpec
 	JobId     string `json:"jobid"`
 	Container string `json:"container"`
-	Port      int    `json:"Port"`
+	Port      int    `json:"port"`
 	Dead      bool
+	Healthy   bool
 }
