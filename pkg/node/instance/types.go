@@ -5,9 +5,10 @@ import "github.com/docker/docker/api/types"
 type InstanceController interface {
 	StartInstance(jobSpec *JobSpec)
 	StopInstance(instance *Instance)
+	RestartInstance(instance *Instance)
 	GetLocalInstances() []*Instance
 	GetLocalInstancesOf(jobSpec *JobSpec) []*Instance
-	LoadInstance(instance *Instance, jobSpec *JobSpec)
+	LoadInstance(instance *Instance)
 }
 
 type JobSpec struct {

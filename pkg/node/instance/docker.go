@@ -25,6 +25,7 @@ type Client struct {
 type ContainerClient interface {
 	StartContainer(spec *JobSpec) (Instance, error)
 	StopContainer(id string) error
+	RestartContainer(instance *Instance) error
 }
 
 func CreateDockerClient(defaultAuth types.AuthConfig) ContainerClient {
@@ -60,7 +61,7 @@ func pullImage(spec *JobSpec, c *Client, ctx context.Context) error {
 	return nil
 }
 
-func setupNetwork(spec *JobSpec, c *Client) (map[nat.Port][]nat.PortBinding, map[nat.Port]struct{}, int) {
+func (c *Client) setupNetwork(spec *JobSpec) (map[nat.Port][]nat.PortBinding, map[nat.Port]struct{}, int) {
 	portBindings := make(map[nat.Port][]nat.PortBinding)
 	portSet := make(map[nat.Port]struct{})
 	portNum := 0
@@ -68,6 +69,25 @@ func setupNetwork(spec *JobSpec, c *Client) (map[nat.Port][]nat.PortBinding, map
 	if spec.Port != 0 {
 		tcpPort, _ := nat.NewPort("tcp", strconv.Itoa(spec.Port))
 		portNum = rand.Intn(55535) + 10000
+		assignedPort := strconv.Itoa(portNum)
+
+		portBindings[tcpPort] = []nat.PortBinding{{
+			HostIP:   c.bindIp,
+			HostPort: assignedPort,
+		}}
+		portSet[tcpPort] = struct{}{}
+	}
+	return portBindings, portSet, portNum
+}
+
+func (c *Client) cloneNetwork(instance *Instance) (map[nat.Port][]nat.PortBinding, map[nat.Port]struct{}, int) {
+	portBindings := make(map[nat.Port][]nat.PortBinding)
+	portSet := make(map[nat.Port]struct{})
+	portNum := 0
+
+	if instance.Job.Port != 0 {
+		tcpPort, _ := nat.NewPort("tcp", strconv.Itoa(instance.Job.Port))
+		portNum = instance.Port
 		assignedPort := strconv.Itoa(portNum)
 
 		portBindings[tcpPort] = []nat.PortBinding{{
@@ -87,7 +107,7 @@ func (c *Client) StartContainer(spec *JobSpec) (Instance, error) {
 		return Instance{}, err
 	}
 
-	portBindings, portSet, portNum := setupNetwork(spec, c)
+	portBindings, portSet, portNum := c.setupNetwork(spec)
 
 	return c.StartContainerWithNetwork(spec, portSet, portBindings, portNum)
 }
@@ -135,4 +155,31 @@ func (c *Client) StopContainer(id string) error {
 	ctx := context.Background()
 	timeout := time.Duration(5) * time.Second
 	return c.docker.ContainerStop(ctx, id, &timeout)
+}
+
+func (c *Client) RestartContainer(instance *Instance) error {
+	ctx := context.Background()
+	timeout := time.Duration(5) * time.Second
+	err := c.docker.ContainerStop(ctx, instance.Container, &timeout)
+	if err != nil {
+		return err
+	}
+
+	c.docker.ContainerRemove(ctx, instance.Container, types.ContainerRemoveOptions{})
+
+	portBindings, portSet, portNum := c.cloneNetwork(instance)
+
+	spec := instance.Job
+	err = pullImage(spec, c, ctx)
+	if err != nil {
+		return err
+	}
+
+	newInstance, err := c.StartContainerWithNetwork(spec, portSet, portBindings, portNum)
+	if err != nil {
+		return err
+	}
+
+	instance.Container = newInstance.Container
+	return nil
 }

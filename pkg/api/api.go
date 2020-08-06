@@ -17,7 +17,7 @@ func (s *Server) StartAPIServer(config *node.Config) error {
 	ws := new(restful.WebService)
 
 	routes.AddUserRoutes(s.Node, ws)
-	routes.AddAdmissionRoutes(s.Node, ws)
+	routes.AddJobRoutes(s.Node, ws)
 	routes.AddStatusRoutes(s.Node, ws)
 
 	restful.Add(ws)

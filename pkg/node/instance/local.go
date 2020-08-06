@@ -63,12 +63,16 @@ func (i LocalInstanceController) GetLocalInstancesOf(jobSpec *JobSpec) []*Instan
 	return clone
 }
 
-func (i LocalInstanceController) LoadInstance(instance *Instance, jobSpec *JobSpec) {
+func (i LocalInstanceController) LoadInstance(instance *Instance) {
 	i.Mutex.Lock()
-	instances, ok := i.Instances[jobSpec]
+	instances, ok := i.Instances[instance.Job]
 	if !ok {
 		instances = make([]*Instance, 0)
 	}
-	i.Instances[jobSpec] = append(instances, instance)
+	i.Instances[instance.Job] = append(instances, instance)
 	i.Mutex.Unlock()
+}
+
+func (i LocalInstanceController) RestartInstance(instance *Instance) {
+	i.ContainerClient.RestartContainer(instance)
 }

@@ -108,7 +108,7 @@ func (n *Node) loadInstances() {
 		}
 
 		inst.Job = n.jobSpecs[inst.JobId]
-		n.InstanceController.LoadInstance(inst, inst.Job)
+		n.InstanceController.LoadInstance(inst)
 	}
 }
 
