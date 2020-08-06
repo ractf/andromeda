@@ -37,6 +37,6 @@ func (j *jobRoutes) restartJob(request *restful.Request, response *restful.Respo
 	jobId := request.PathParameter("id")
 	jobSpec := j.node.GetJobSpecByUuid(jobId)
 	for _, i := range j.node.InstanceController.GetLocalInstancesOf(jobSpec) {
-		j.node.InstanceController.RestartInstance(i)
+		go j.node.InstanceController.RestartInstance(i)
 	}
 }

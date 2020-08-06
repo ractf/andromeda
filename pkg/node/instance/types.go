@@ -9,12 +9,15 @@ type InstanceController interface {
 	GetLocalInstances() []*Instance
 	GetLocalInstancesOf(jobSpec *JobSpec) []*Instance
 	LoadInstance(instance *Instance)
+	IsJobUpToDate(jobSpec *JobSpec) bool
 }
 
 type ContainerClient interface {
 	StartContainer(spec *JobSpec) (Instance, error)
 	StopContainer(id string) error
 	RestartContainer(instance *Instance) error
+	PullImage(spec *JobSpec) error
+	IsImageUpToDate(spec *JobSpec) bool
 }
 
 type JobSpec struct {

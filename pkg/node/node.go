@@ -164,6 +164,12 @@ func (n *Node) HousekeepingTick() {
 			}
 			i.Healthy = healthy
 		}
+
+		if !n.InstanceController.IsJobUpToDate(spec) {
+			for _, i := range n.InstanceController.GetLocalInstancesOf(spec) {
+				go n.InstanceController.RestartInstance(i)
+			}
+		}
 	}
 }
 

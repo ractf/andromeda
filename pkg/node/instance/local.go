@@ -76,3 +76,7 @@ func (i LocalInstanceController) LoadInstance(instance *Instance) {
 func (i LocalInstanceController) RestartInstance(instance *Instance) {
 	i.ContainerClient.RestartContainer(instance)
 }
+
+func (i LocalInstanceController) IsJobUpToDate(jobSpec *JobSpec) bool {
+	return i.ContainerClient.IsImageUpToDate(jobSpec)
+}

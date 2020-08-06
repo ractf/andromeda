@@ -30,7 +30,8 @@ func CreateDockerClient(defaultAuth types.AuthConfig) ContainerClient {
 	return &Client{docker: cli, defaultAuth: defaultAuth}
 }
 
-func pullImage(spec *JobSpec, c *Client, ctx context.Context) error {
+func (c *Client) PullImage(spec *JobSpec) error {
+	ctx := context.Background()
 	encodedJSON, err := json.Marshal(spec.RegistryAuth)
 	if spec.RegistryAuth == (types.AuthConfig{}) {
 		encodedJSON, err = json.Marshal(c.defaultAuth)
@@ -94,9 +95,7 @@ func (c *Client) cloneNetwork(instance *Instance) (map[nat.Port][]nat.PortBindin
 }
 
 func (c *Client) StartContainer(spec *JobSpec) (Instance, error) {
-	ctx := context.Background()
-
-	err := pullImage(spec, c, ctx)
+	err := c.PullImage(spec)
 	if err != nil {
 		return Instance{}, err
 	}
@@ -164,7 +163,7 @@ func (c *Client) RestartContainer(instance *Instance) error {
 	portBindings, portSet, portNum := c.cloneNetwork(instance)
 
 	spec := instance.Job
-	err = pullImage(spec, c, ctx)
+	err = c.PullImage(spec)
 	if err != nil {
 		return err
 	}
@@ -176,4 +175,21 @@ func (c *Client) RestartContainer(instance *Instance) error {
 
 	instance.Container = newInstance.Container
 	return nil
+}
+
+func (c *Client) IsImageUpToDate(spec *JobSpec) bool {
+	ctx := context.Background()
+	imageInspect, _, err := c.docker.ImageInspectWithRaw(ctx, spec.ImageName)
+	if err != nil {
+		return true
+	}
+	c.PullImage(spec)
+	imageInspect2, _, err := c.docker.ImageInspectWithRaw(ctx, spec.ImageName)
+	if err != nil {
+		return true
+	}
+	if imageInspect2.ID != imageInspect.ID {
+		return false
+	}
+	return true
 }
