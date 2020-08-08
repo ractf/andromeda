@@ -1,6 +1,6 @@
 # Andromeda
 
-![](https://github.com/ractf/andromeda/workflows/Build%20Container/badge.svg)
+![](https://github.com/ractf/andromeda/workflows/Build%20Release/badge.svg) ![](https://github.com/ractf/andromeda/workflows/Build%20Container/badge.svg)
 
 Andromeda is a simple Docker container manager for CTFs.
 
