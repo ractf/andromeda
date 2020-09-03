@@ -1,7 +1,10 @@
 package node
 
 import (
+	"encoding/json"
 	"github.com/ractf/andromeda/pkg/node/instance"
+	"io/ioutil"
+	"os"
 	"sync"
 	"time"
 )
@@ -12,14 +15,16 @@ type Node struct {
 	jobSpecList        []*instance.JobSpec
 	InstanceController instance.InstanceController
 	mutex              *sync.Mutex
+	configPath         string
 }
 
-func StartNode(config *Config) *Node {
+func StartNode(config *Config, configPath string) *Node {
 	node := Node{
 		Config:      config,
 		jobSpecs:    make(map[string]*instance.JobSpec),
 		jobSpecList: make([]*instance.JobSpec, 0),
 		mutex:       &sync.Mutex{},
+		configPath:  configPath,
 	}
 
 	instanceController := instance.LocalInstanceController{
@@ -52,11 +57,14 @@ func (n *Node) SubmitJobSpec(spec *instance.JobSpec) {
 
 func (n *Node) HousekeepingLoop() {
 	go n.HousekeepingTick()
-	ticker := time.NewTicker(time.Second * time.Duration(30))
+	housekeepingTicker := time.NewTicker(time.Second * time.Duration(30))
+	configRefreshTicker := time.NewTicker(time.Second * time.Duration(30))
 	for {
 		select {
-		case <-ticker.C:
+		case <-housekeepingTicker.C:
 			go n.HousekeepingTick()
+		case <-configRefreshTicker.C:
+			go n.refreshConfig()
 		}
 	}
 }
@@ -69,4 +77,21 @@ func (n *Node) HousekeepingTick() {
 			_ = instance
 		}
 	}
+}
+
+func (n *Node) refreshConfig() {
+	configFile, err := os.Open(n.configPath)
+	if err != nil {
+		return
+	}
+	defer configFile.Close()
+
+	bytes, err := ioutil.ReadAll(configFile)
+	if err != nil {
+		return
+	}
+
+	var config Config
+	err = json.Unmarshal(bytes, &config)
+	n.Config = &config
 }
