@@ -1,9 +1,6 @@
 name: Build Release
 
-on:
-  push:
-    branches:
-      - master
+on: push
 
 jobs:
   release-linux-amd64:
@@ -23,12 +20,13 @@ jobs:
       run: go version
 
     - name: Build Andromedad
-      run: go build cmd/andromedad
+      run: go build ./cmd/andromedad
 
     - name: Build Andromeda
-      run: go build cmd/andromeda
+      run: go build ./cmd/andromeda
 
     - name: Create Release
+      if: github.ref == 'refs/heads/master'
       id: create_release
       uses: actions/create-release@v1
       env:
@@ -42,6 +40,7 @@ jobs:
         prerelease: false
 
     - name: Upload Release Asset
+      if: github.ref == 'refs/heads/master'
       id: upload-release-asset 
       uses: actions/upload-release-asset@v1
       env:
@@ -53,6 +52,7 @@ jobs:
         asset_content_type: application/octet-stream
 
     - name: Upload Client Release Asset
+      if: github.ref == 'refs/heads/master'
       id: upload-client-release-asset
       uses: actions/upload-release-asset@v1
       env:
@@ -62,3 +62,15 @@ jobs:
         asset_path: ./andromeda
         asset_name: andromeda
         asset_content_type: application/octet-stream
+
+    - name: Upload Andromeda
+      uses: actions/upload-artifact@v2
+      with:
+        name: andromeda
+        path: ./andromeda
+
+    - name: Upload Andromedad
+      uses: actions/upload-artifact@v2
+      with:
+        name: andromedad
+        path: ./andromedad
