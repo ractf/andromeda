@@ -38,6 +38,7 @@ var RootCommand = &cobra.Command{
 
 		var config node.Config
 		err = json.Unmarshal(bytes, &config)
+		config.ConfigPath = configPath
 
 		node := node.StartNode(&config)
 		apiServer := api.Server{
