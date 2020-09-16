@@ -13,6 +13,7 @@ type Config struct {
 	DefaultRegistryAuth types.AuthConfig `json:"registryAuth,omitempty"`
 	DiscordWebhookUrl   string           `json:"discordWebhookUrl"`
 	ConfigPath          string
+	RefreshConfig       bool
 }
 
 var DefaultConfig = Config{

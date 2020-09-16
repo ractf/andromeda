@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
@@ -41,11 +40,7 @@ func (c *Client) PullImage(spec *JobSpec) error {
 	}
 	authStr := base64.URLEncoding.EncodeToString(encodedJSON)
 
-	fmt.Println("Start docker pull")
-	t := time.Now()
 	readCloser, err := c.docker.ImagePull(ctx, spec.ImageName, types.ImagePullOptions{RegistryAuth: authStr})
-	u := time.Now()
-	fmt.Println(u.Sub(t))
 	if err != nil {
 		return err
 	}
@@ -139,6 +134,7 @@ func (c *Client) StartContainerWithNetwork(spec *JobSpec, portSet map[nat.Port]s
 
 	return Instance{
 		Job:       spec,
+		JobId:     spec.Uuid,
 		Container: resp.ID,
 		Port:      portNum,
 	}, nil

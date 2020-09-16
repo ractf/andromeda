@@ -45,7 +45,6 @@ func StartNode(config *Config) *Node {
 	node.loadJobs()
 	node.loadInstances()
 	go node.HousekeepingLoop()
-
 	return &node
 }
 
@@ -198,6 +197,9 @@ func (n *Node) postWebhook(i *instance.Instance) {
 }
 
 func (n *Node) refreshConfig() {
+	if !n.Config.RefreshConfig {
+		return
+	}
 	configFile, err := os.Open(n.Config.ConfigPath)
 	if err != nil {
 		return

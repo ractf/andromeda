@@ -27,13 +27,7 @@ func (i LocalInstanceController) StartInstance(jobSpec *JobSpec) {
 		fmt.Println(err)
 	}
 
-	i.Mutex.Lock()
-	instances, ok := i.Instances[jobSpec]
-	if !ok {
-		instances = make([]*Instance, 0)
-	}
-	i.Instances[jobSpec] = append(instances, &instance)
-	i.Mutex.Unlock()
+	i.LoadInstance(&instance)
 }
 
 func (i LocalInstanceController) StopInstance(instance *Instance) {
@@ -56,7 +50,6 @@ func (i LocalInstanceController) GetLocalInstances() []*Instance {
 func (i LocalInstanceController) GetLocalInstancesOf(jobSpec *JobSpec) []*Instance {
 	i.Mutex.Lock()
 	defer i.Mutex.Unlock()
-
 	clone := make([]*Instance, len(i.Instances[jobSpec]))
 	copy(clone, i.Instances[jobSpec])
 
