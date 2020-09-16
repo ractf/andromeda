@@ -45,7 +45,6 @@ func StartNode(config *Config) *Node {
 	node.loadJobs()
 	node.loadInstances()
 	go node.HousekeepingLoop()
-
 	return &node
 }
 
@@ -151,6 +150,7 @@ func (n *Node) HousekeepingLoop() {
 }
 
 func (n *Node) HousekeepingTick() {
+	n.refreshConfig()
 	for _, spec := range n.JobSpecList {
 		instances := n.InstanceController.GetLocalInstancesOf(spec)
 
@@ -194,4 +194,25 @@ func (n *Node) postWebhook(i *instance.Instance) {
 	if err != nil {
 		fmt.Println(err)
 	}
+}
+
+func (n *Node) refreshConfig() {
+	if !n.Config.RefreshConfig {
+		return
+	}
+	configFile, err := os.Open(n.Config.ConfigPath)
+	if err != nil {
+		return
+	}
+	defer configFile.Close()
+
+	bytes, err := ioutil.ReadAll(configFile)
+	if err != nil {
+		return
+	}
+
+	var config Config
+	err = json.Unmarshal(bytes, &config)
+	config.ConfigPath = n.Config.ConfigPath
+	n.Config = &config
 }

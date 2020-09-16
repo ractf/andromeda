@@ -5,7 +5,7 @@ go 1.14
 require (
 	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/capnm/sysinfo v0.0.0-20130621111458-5909a53897f3
-	github.com/docker/distribution v2.7.1+incompatible // indirect
+	github.com/docker/distribution v2.7.1+incompatible
 	github.com/docker/docker v1.13.1
 	github.com/docker/go-connections v0.4.0
 	github.com/docker/go-units v0.4.0 // indirect
