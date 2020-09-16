@@ -120,6 +120,10 @@ func (c *Client) StartContainerWithNetwork(spec *JobSpec, portSet map[nat.Port]s
 			Memory:   spec.Resources.MemLimit,
 			NanoCPUs: int64(cpus * 1000000000),
 		},
+		RestartPolicy: container.RestartPolicy{
+			Name: "always",
+			MaximumRetryCount: 100,
+		},
 	}
 
 	resp, err := c.docker.ContainerCreate(ctx, &containerConfig, &hostConfig, nil, "")
