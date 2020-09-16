@@ -18,10 +18,12 @@ var RootCommand = &cobra.Command{
 	Use: "andromedad",
 	Run: func(cmd *cobra.Command, args []string) {
 		rand.Seed(time.Now().Unix())
+		var config *node.Config
 		if envConfig {
-
+			config = loadConfigFromEnvironment()
+		} else {
+			config = loadConfigFromFile()
 		}
-		config := loadConfigFromFile()
 
 		node := node.StartNode(config)
 		apiServer := api.Server{
