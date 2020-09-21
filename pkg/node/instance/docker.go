@@ -122,7 +122,6 @@ func (c *Client) StartContainerWithNetwork(spec *JobSpec, portSet map[nat.Port]s
 		},
 		RestartPolicy: container.RestartPolicy{
 			Name: "always",
-			MaximumRetryCount: 100,
 		},
 	}
 
