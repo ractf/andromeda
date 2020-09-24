@@ -32,3 +32,4 @@ Each challenge should be stored in its own subdirectory and have a challenge.jso
 ```
 
 This config file should be stored in a directory with the challenges docker file and other relevant files.
+.
