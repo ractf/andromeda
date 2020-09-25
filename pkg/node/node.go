@@ -32,7 +32,7 @@ func StartNode(config *Config) *Node {
 	}
 
 	instanceController := instance.LocalInstanceController{
-		ContainerClient: instance.CreateDockerClient(config.DefaultRegistryAuth),
+		ContainerClient: instance.CreateDockerClient(config.DefaultRegistryAuth, config.PortMin, config.PortMax),
 		Mutex:           &sync.Mutex{},
 		Instances:       make(map[*instance.JobSpec][]*instance.Instance),
 	}
