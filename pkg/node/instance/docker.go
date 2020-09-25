@@ -10,6 +10,7 @@ import (
 	"github.com/docker/go-connections/nat"
 	"io"
 	"math/rand"
+	"net/url"
 	"os"
 	"strconv"
 	"time"
@@ -30,6 +31,11 @@ func CreateDockerClient(defaultAuth types.AuthConfig) ContainerClient {
 }
 
 func (c *Client) PullImage(spec *JobSpec) error {
+	_, err := url.ParseRequestURI(spec.ImageName)
+	if err != nil {
+		return nil
+	}
+
 	ctx := context.Background()
 	encodedJSON, err := json.Marshal(spec.RegistryAuth)
 	if spec.RegistryAuth == (types.AuthConfig{}) {
