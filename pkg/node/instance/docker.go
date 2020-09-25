@@ -20,14 +20,16 @@ type Client struct {
 	docker      *client.Client
 	bindIp      string
 	defaultAuth types.AuthConfig
+	portMin     int
+	portMax     int
 }
 
-func CreateDockerClient(defaultAuth types.AuthConfig) ContainerClient {
+func CreateDockerClient(defaultAuth types.AuthConfig, portMin int, portMax int) ContainerClient {
 	cli, err := client.NewEnvClient()
 	if err != nil {
 		panic(err)
 	}
-	return &Client{docker: cli, defaultAuth: defaultAuth}
+	return &Client{docker: cli, defaultAuth: defaultAuth, portMin: portMin, portMax: portMax}
 }
 
 func (c *Client) PullImage(spec *JobSpec) error {
@@ -64,7 +66,7 @@ func (c *Client) setupNetwork(spec *JobSpec) (map[nat.Port][]nat.PortBinding, ma
 
 	if spec.Port != 0 {
 		tcpPort, _ := nat.NewPort("tcp", strconv.Itoa(spec.Port))
-		portNum = rand.Intn(55535) + 10000
+		portNum = rand.Intn(c.portMax-c.portMin) + c.portMin
 		assignedPort := strconv.Itoa(portNum)
 
 		portBindings[tcpPort] = []nat.PortBinding{{
