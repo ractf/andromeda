@@ -6,6 +6,7 @@ type InstanceController interface {
 	StartInstance(jobSpec *JobSpec)
 	StopInstance(instance *Instance)
 	RestartInstance(instance *Instance)
+	RemoveInstance(instance *Instance)
 	GetLocalInstances() []*Instance
 	GetLocalInstancesOf(jobSpec *JobSpec) []*Instance
 	LoadInstance(instance *Instance)
@@ -15,6 +16,7 @@ type InstanceController interface {
 type ContainerClient interface {
 	StartContainer(spec *JobSpec) (Instance, error)
 	StopContainer(id string) error
+	RemoveContainer(id string) error
 	RestartContainer(instance *Instance) error
 	PullImage(spec *JobSpec) error
 	IsImageUpToDate(spec *JobSpec) bool

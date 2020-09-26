@@ -21,6 +21,7 @@ func AddJobRoutes(node *node.Node, ws *restful.WebService) {
 
 	ws.Route(ws.POST("/job/submit").To(Authenticated(j.submitJob, node.Config.ApiKey)))
 	ws.Route(ws.POST("/job/{id}/restart").To(Authenticated(j.restartJob, node.Config.ApiKey)))
+	ws.Route(ws.POST("/job/{id}/delete").To(Authenticated(j.deleteJob, node.Config.ApiKey)))
 }
 
 func (j *jobRoutes) submitJob(request *restful.Request, response *restful.Response) {
@@ -43,5 +44,14 @@ func (j *jobRoutes) restartJob(request *restful.Request, response *restful.Respo
 	jobSpec := j.node.GetJobSpecByUuid(jobId)
 	for _, i := range j.node.InstanceController.GetLocalInstancesOf(jobSpec) {
 		go j.node.InstanceController.RestartInstance(i)
+	}
+}
+
+func (j *jobRoutes) deleteJob(request *restful.Request, response *restful.Response) {
+	jobId := request.PathParameter("id")
+	jobSpec := j.node.GetJobSpecByUuid(jobId)
+	for _, i := range j.node.InstanceController.GetLocalInstancesOf(jobSpec) {
+		j.node.InstanceController.StopInstance(i)
+		j.node.InstanceController.RemoveInstance(i)
 	}
 }

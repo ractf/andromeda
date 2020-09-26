@@ -157,6 +157,11 @@ func (c *Client) StopContainer(id string) error {
 	return c.docker.ContainerStop(ctx, id, &timeout)
 }
 
+func (c *Client) RemoveContainer(id string) error {
+	ctx := context.Background()
+	return c.docker.ContainerRemove(ctx, id, types.ContainerRemoveOptions{})
+}
+
 func (c *Client) RestartContainer(instance *Instance) error {
 	ctx := context.Background()
 	timeout := time.Duration(5) * time.Second
