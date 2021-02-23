@@ -1,5 +1,7 @@
 # Andromeda
 
+# Deprecated: See [Polaris](https://github.com/ractf/polaris) for a replacement
+
 ![Build Release Badge](https://github.com/ractf/andromeda/workflows/Build%20Release/badge.svg) ![Build Container Badge](https://github.com/ractf/andromeda/workflows/Build%20Container/badge.svg)
 
 Andromeda is a simple Docker container manager for CTFs.
