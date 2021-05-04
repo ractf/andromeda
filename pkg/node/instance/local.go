@@ -73,3 +73,8 @@ func (i LocalInstanceController) RestartInstance(instance *Instance) {
 func (i LocalInstanceController) IsJobUpToDate(jobSpec *JobSpec) bool {
 	return i.ContainerClient.IsImageUpToDate(jobSpec)
 }
+
+func (i LocalInstanceController) RemoveInstance(instance *Instance) {
+	i.ContainerClient.StopContainer(instance.Container)
+	i.ContainerClient.RemoveContainer(instance.Container)
+}
